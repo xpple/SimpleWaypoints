@@ -1,0 +1,8 @@
+{
+  "commands.sw:waypoint.add.success": "成功添加导航点“%s”位于%s在%s",
+  "commands.sw:waypoint.alreadyExists": "名称为“%s”的导航点已经存在",
+  "commands.sw:waypoint.list.empty": "没有可用的导航点",
+  "commands.sw:waypoint.notFound": "找不到名称为“%s”的导航点",
+  "commands.sw:waypoint.remove.success": "导航点“%s”已被移除",
+  "commands.sw:waypoint.saveFailed": "无法保存导航点文件"
+}
