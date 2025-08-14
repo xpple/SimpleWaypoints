@@ -20,13 +20,17 @@ import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     public static final SimpleWaypointsImpl INSTANCE = new SimpleWaypointsImpl();
 
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    private static final Set<String> commandAliases = new HashSet<>();
 
     static final Map<String, Map<String, Waypoint>> waypoints = new HashMap<>();
 
@@ -39,6 +43,16 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
         } catch (Exception e) {
             LOGGER.error("Could not load waypoints file, hence the waypoints will not work!", e);
         }
+    }
+
+    @Override
+    public void registerCommandAlias(String alias) {
+        commandAliases.add(alias);
+    }
+
+    @Override
+    public Set<String> getCommandAliases() {
+        return Collections.unmodifiableSet(commandAliases);
     }
 
     @Override

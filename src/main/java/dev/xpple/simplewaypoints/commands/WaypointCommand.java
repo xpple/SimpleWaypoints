@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.xpple.simplewaypoints.api.SimpleWaypointsAPI;
 import dev.xpple.simplewaypoints.api.Waypoint;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -30,11 +31,11 @@ import static dev.xpple.clientarguments.arguments.CHexColorArgument.*;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 import static net.minecraft.commands.SharedSuggestionProvider.*;
 
-public abstract class WaypointCommand {
+public class WaypointCommand {
     private static final SimpleWaypointsAPI API = SimpleWaypointsAPI.getInstance();
 
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(literal("sw:waypoint")
+        LiteralCommandNode<FabricClientCommandSource> waypointNode = dispatcher.register(literal("sw:waypoint")
             .then(literal("add")
                 .then(argument("name", word())
                     .then(argument("pos", blockPos())
@@ -76,6 +77,8 @@ public abstract class WaypointCommand {
                 .executes(ctx -> list(ctx.getSource()))
                 .then(argument("current", bool())
                     .executes(ctx -> list(ctx.getSource(), getBool(ctx, "current"))))));
+
+        API.getCommandAliases().forEach(alias -> dispatcher.register(literal(alias).redirect(waypointNode)));
     }
 
     private enum WaypointSuggestions {

@@ -10,11 +10,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface SimpleWaypointsAPI {
     static SimpleWaypointsAPI getInstance() {
         return SimpleWaypointsImpl.INSTANCE;
     }
+
+    void registerCommandAlias(String alias);
+
+    Set<String> getCommandAliases();
 
     @Nullable String getWorldIdentifier(Minecraft minecraft);
 
