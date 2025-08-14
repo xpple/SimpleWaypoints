@@ -130,7 +130,7 @@ public class WaypointCommand {
 
     private static int rename(FabricClientCommandSource source, String name, String newName) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
-        int returnValue = API.rename(worldIdentifier, name, newName);
+        int returnValue = API.renameWaypoint(worldIdentifier, name, newName);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.rename.success", name, newName));
         return returnValue;
     }

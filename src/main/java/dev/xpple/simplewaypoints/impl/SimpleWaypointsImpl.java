@@ -1,6 +1,8 @@
 package dev.xpple.simplewaypoints.impl;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.logging.LogUtils;
@@ -34,6 +36,7 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
 
     static final Map<String, Map<String, Waypoint>> waypoints = new HashMap<>();
 
+    private static final DynamicCommandExceptionType INVALID_WAYPOINT_NAME_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.invalidWaypointName", name));
     private static final DynamicCommandExceptionType ALREADY_EXISTS_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.alreadyExists", name));
     private static final DynamicCommandExceptionType NOT_FOUND_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.notFound", name));
 
@@ -97,6 +100,10 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
 
     @Override
     public int addWaypoint(String worldIdentifier, ResourceKey<Level> dimension, String name, BlockPos pos, int color) throws CommandSyntaxException {
+        String parsedString = StringArgumentType.word().parse(new StringReader(name));
+        if (!parsedString.equals(name)) {
+            throw INVALID_WAYPOINT_NAME_EXCEPTION.create(name);
+        }
         Map<String, Waypoint> worldWaypoints = waypoints.computeIfAbsent(worldIdentifier, key -> new HashMap<>());
 
         if (worldWaypoints.putIfAbsent(name, new Waypoint(dimension, pos, color)) != null) {
@@ -124,7 +131,7 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     }
 
     @Override
-    public int rename(String worldIdentifier, String name, String newName) throws CommandSyntaxException {
+    public int renameWaypoint(String worldIdentifier, String name, String newName) throws CommandSyntaxException {
         Map<String, Waypoint> worldWaypoints = waypoints.get(worldIdentifier);
 
         if (worldWaypoints == null) {
@@ -134,6 +141,11 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
         Waypoint waypoint = worldWaypoints.remove(name);
         if (waypoint == null) {
             throw NOT_FOUND_EXCEPTION.create(name);
+        }
+
+        String parsedString = StringArgumentType.word().parse(new StringReader(name));
+        if (!parsedString.equals(name)) {
+            throw INVALID_WAYPOINT_NAME_EXCEPTION.create(name);
         }
 
         worldWaypoints.put(newName, waypoint);

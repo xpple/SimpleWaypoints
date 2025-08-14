@@ -15,6 +15,7 @@
   "commands.sw:waypoint.shown": "shown",
   "commands.sw:waypoint.hidden": "hidden",
   "commands.sw:waypoint.saveFailed": "Could not save waypoints file!",
+  "commands.sw:waypoint.invalidWaypointName": "Invalid waypoint name \"%s\"!",
   "commands.sw:waypoint.alreadyExists": "A waypoint with the name \"%s\" already exists!",
   "commands.sw:waypoint.notFound": "No waypoint with the name \"%s\" could be found!"
 }

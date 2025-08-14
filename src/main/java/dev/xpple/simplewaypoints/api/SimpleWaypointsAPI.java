@@ -33,7 +33,7 @@ public interface SimpleWaypointsAPI {
 
     int removeWaypoint(String worldIdentifier, String name) throws CommandSyntaxException;
 
-    int rename(String worldIdentifier, String name, String newName) throws CommandSyntaxException;
+    int renameWaypoint(String worldIdentifier, String name, String newName) throws CommandSyntaxException;
 
     int editWaypoint(String worldIdentifier, String name, BlockPos pos) throws CommandSyntaxException;
 
