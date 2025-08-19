@@ -57,7 +57,7 @@ public final class WaypointRenderingHelper {
         Camera camera = gameRenderer.getMainCamera();
         Entity cameraEntity = camera.getEntity();
         float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(true);
-        double verticalFovRad = Math.toRadians(gameRenderer.getFov(camera, partialTicks, false));
+        double verticalFovRad = Math.toRadians(gameRenderer.getFov(camera, partialTicks, true));
         Window window = minecraft.getWindow();
         double aspectRatio = (double) window.getGuiScaledWidth() / window.getGuiScaledHeight();
         double horizontalFovRad = 2 * Math.atan(Math.tan(verticalFovRad / 2) * aspectRatio);
@@ -81,8 +81,9 @@ public final class WaypointRenderingHelper {
                 return;
             }
             Component label = ComponentUtils.wrapInSquareBrackets(Component.literal(waypointName + ' ' + distance).withStyle(ChatFormatting.YELLOW));
+            Vec3 waypointCenter = waypoint.location().getCenter();
 
-            Vector2d waypointLocation = new Vector2d(waypoint.location().getX(), waypoint.location().getZ());
+            Vector2d waypointLocation = new Vector2d(waypointCenter.x, waypointCenter.z);
             double angleRad = viewVector.angle(waypointLocation.sub(position, new Vector2d()));
             boolean right = angleRad > 0;
             angleRad = Math.abs(angleRad);
