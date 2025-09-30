@@ -110,7 +110,9 @@ public final class WaypointRenderingHelper {
                 double ab = 2 * av;
                 double am = right ? mv + av : ab - (mv + av);
                 double perc = am / ab;
-                x = (int) (perc * guiGraphics.guiWidth());
+                int guiWidth = guiGraphics.guiWidth();
+                int halfWidth = minecraft.font.width(label) / 2;
+                x = Math.clamp((int) (perc * guiWidth), halfWidth, guiWidth - halfWidth);
             }
             xPositions.add(new WaypointLabelLocation(label, x));
         });
