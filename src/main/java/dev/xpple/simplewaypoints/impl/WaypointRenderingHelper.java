@@ -181,11 +181,11 @@ public final class WaypointRenderingHelper {
 
             Vec3 cameraPosition = camera.getPosition();
             float distance = (float) waypointLocation.distToCenterSqr(cameraPosition);
-            distance = (float) Math.sqrt(distance) / 6;
+            distance = (float) Math.sqrt(distance);
 
             Vec3 relWaypointPosition = new Vec3(waypointLocation).subtract(cameraPosition);
 
-            waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance, waypoint.color()));
+            waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance / 6, waypoint.color(), Configs.waypointTextRenderLimitComment < 0 || distance < Configs.waypointTextRenderLimitComment, Configs.waypointLineBoxRenderLimitComment < 0 || distance < Configs.waypointLineBoxRenderLimitComment));
         });
 
         state.setData(WAYPOINT_LIST_KEY, new WaypointListState(camera.rotation(), waypointStates));
@@ -200,20 +200,24 @@ public final class WaypointRenderingHelper {
         for (WaypointState waypoint : waypointList.waypoints) {
             poseStack.pushPose();
 
-            AABB box = new AABB(waypoint.relPosition(), waypoint.relPosition().add(1));
-            float red = ARGB.redFloat(waypoint.color());
-            float green = ARGB.greenFloat(waypoint.color());
-            float blue = ARGB.blueFloat(waypoint.color());
-            ShapeRenderer.renderLineBox(poseStack.last(), bufferSource.getBuffer(NoDepthLayer.LINES_NO_DEPTH_LAYER), box, red, green, blue, 1);
+            if (waypoint.renderLineBox) {
+                AABB box = new AABB(waypoint.relPosition(), waypoint.relPosition().add(1));
+                float red = ARGB.redFloat(waypoint.color());
+                float green = ARGB.greenFloat(waypoint.color());
+                float blue = ARGB.blueFloat(waypoint.color());
+                ShapeRenderer.renderLineBox(poseStack.last(), bufferSource.getBuffer(NoDepthLayer.LINES_NO_DEPTH_LAYER), box, red, green, blue, 1);
+            }
 
-            poseStack.translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
-            poseStack.mulPose(waypointList.cameraRotation());
-            poseStack.scale(0.025f * waypoint.distance(), -0.025f * waypoint.distance(), 0.025f * waypoint.distance());
+            if (waypoint.renderText) {
+                poseStack.translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
+                poseStack.mulPose(waypointList.cameraRotation());
+                poseStack.scale(0.025f * waypoint.distance(), -0.025f * waypoint.distance(), 0.025f * waypoint.distance());
 
-            Font font = Minecraft.getInstance().font;
-            int width = font.width(waypoint.name()) / 2;
-            int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
-            font.drawInBatch(waypoint.name(), -width, 0, 0xFF_FFFFFF, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, backgroundColour, LightTexture.FULL_SKY);
+                Font font = Minecraft.getInstance().font;
+                int width = font.width(waypoint.name()) / 2;
+                int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
+                font.drawInBatch(waypoint.name(), -width, 0, 0xFF_FFFFFF, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, backgroundColour, LightTexture.FULL_SKY);
+            }
 
             poseStack.popPose();
         }
@@ -225,6 +229,6 @@ public final class WaypointRenderingHelper {
     private record WaypointListState(Quaternionfc cameraRotation, List<WaypointState> waypoints) {
     }
 
-    private record WaypointState(String name, Vec3 relPosition, float distance, int color) {
+    private record WaypointState(String name, Vec3 relPosition, float distance, int color, boolean renderText, boolean renderLineBox) {
     }
 }
