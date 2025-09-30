@@ -31,10 +31,10 @@ public class Configs {
         return Component.translatable("commands.sw:config.waypointLabelRenderLimit.comment");
     }
 
-    @Config(comment = "waypointLineBoxRenderLimit")
+    @Config(comment = "waypointLineBoxRenderLimitComment")
     public static int waypointLineBoxRenderLimit = -1;
 
-    private static Component waypointLineBoxRenderLimit() {
+    private static Component waypointLineBoxRenderLimitComment() {
         return Component.translatable("commands.sw:config.waypointLineBoxRenderLimit.comment");
     }
 
