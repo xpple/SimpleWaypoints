@@ -185,7 +185,7 @@ public final class WaypointRenderingHelper {
 
             Vec3 relWaypointPosition = new Vec3(waypointLocation).subtract(cameraPosition);
 
-            waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance / 6, waypoint.color(), Configs.waypointTextRenderLimitComment < 0 || distance < Configs.waypointTextRenderLimitComment, Configs.waypointLineBoxRenderLimitComment < 0 || distance < Configs.waypointLineBoxRenderLimitComment));
+            waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance / 6, waypoint.color(), Configs.waypointTextRenderLimit < 0 || distance < Configs.waypointTextRenderLimit, Configs.waypointLineBoxRenderLimit < 0 || distance < Configs.waypointLineBoxRenderLimit));
         });
 
         state.setData(WAYPOINT_LIST_KEY, new WaypointListState(camera.rotation(), waypointStates));
