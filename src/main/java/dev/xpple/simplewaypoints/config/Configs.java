@@ -30,4 +30,18 @@ public class Configs {
     private static Component waypointLabelRenderLimitComment() {
         return Component.translatable("commands.sw:config.waypointLabelRenderLimit.comment");
     }
+
+    @Config(comment = "waypointLineBoxRenderLimitComment")
+    public static int waypointLineBoxRenderLimit = -1;
+
+    private static Component waypointLineBoxRenderLimitComment() {
+        return Component.translatable("commands.sw:config.waypointLineBoxRenderLimit.comment");
+    }
+
+    @Config(comment = "waypointMarkerRenderLimitComment")
+    public static int waypointMarkerRenderLimit = -1;
+
+    private static Component waypointMarkerRenderLimitComment() {
+        return Component.translatable("commands.sw:config.waypointMarkerRenderLimit.comment");
+    }
 }

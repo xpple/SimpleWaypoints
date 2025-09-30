@@ -48,12 +48,12 @@ public final class WaypointRenderingHelper {
     private static final ResourceLocation HUD_LAYER_ID = ResourceLocation.fromNamespaceAndPath(SimpleWaypoints.MOD_ID, "waypoints");
 
     public static void registerEvents() {
-        HudElementRegistry.addLast(HUD_LAYER_ID, WaypointRenderingHelper::renderWaypointLabels);
+        HudElementRegistry.addLast(HUD_LAYER_ID, WaypointRenderingHelper::renderWaypointMarkers);
         ExtractStateEvent.EXTRACT_STATE.register(WaypointRenderingHelper::extractWaypointBoxes);
         EndMainPassEvent.END_MAIN_PASS.register(WaypointRenderingHelper::renderWaypointBoxes);
     }
 
-    private static void renderWaypointLabels(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    private static void renderWaypointMarkers(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         String worldIdentifier = SimpleWaypointsImpl.INSTANCE.getWorldIdentifier(Minecraft.getInstance());
         Map<String, Waypoint> worldWaypoints = SimpleWaypointsImpl.waypoints.get(worldIdentifier);
         if (worldWaypoints == null) {
@@ -74,7 +74,7 @@ public final class WaypointRenderingHelper {
         Vector2d viewVector = new Vector2d(viewVector3.x, viewVector3.z);
         Vector2d position = new Vector2d(cameraEntity.getEyePosition().x, cameraEntity.getEyePosition().z);
 
-        List<WaypointLabelLocation> xPositions = new ArrayList<>();
+        List<WaypointMarkerLocation> xPositions = new ArrayList<>();
         worldWaypoints.forEach((waypointName, waypoint) -> {
             if (!waypoint.dimension().location().equals(minecraft.level.dimension().location())) {
                 return;
@@ -85,10 +85,10 @@ public final class WaypointRenderingHelper {
 
             double distanceSquared = waypoint.location().distToCenterSqr(cameraEntity.position());
             long distance = Math.round(Math.sqrt(distanceSquared));
-            if (Configs.waypointLabelRenderLimit >= 0 && distance > Configs.waypointLabelRenderLimit) {
+            if (Configs.waypointMarkerRenderLimit >= 0 && distance > Configs.waypointMarkerRenderLimit) {
                 return;
             }
-            Component label = ComponentUtils.wrapInSquareBrackets(Component.literal(waypointName + ' ' + distance).withStyle(ChatFormatting.YELLOW));
+            Component marker = ComponentUtils.wrapInSquareBrackets(Component.literal(waypointName + ' ' + distance).withStyle(ChatFormatting.YELLOW));
             Vec3 waypointCenter = waypoint.location().getCenter();
 
             Vector2d waypointLocation = new Vector2d(waypointCenter.x, waypointCenter.z);
@@ -98,7 +98,7 @@ public final class WaypointRenderingHelper {
 
             int x;
             if (angleRad > horizontalFovRad / 2) {
-                int width = minecraft.font.width(label);
+                int width = minecraft.font.width(marker);
                 x = right ? guiGraphics.guiWidth() - width / 2 : width / 2;
             } else {
                 // V is the view vector
@@ -111,33 +111,33 @@ public final class WaypointRenderingHelper {
                 double am = right ? mv + av : ab - (mv + av);
                 double perc = am / ab;
                 int guiWidth = guiGraphics.guiWidth();
-                int halfWidth = minecraft.font.width(label) / 2;
+                int halfWidth = minecraft.font.width(marker) / 2;
                 x = Math.clamp((int) (perc * guiWidth), halfWidth, guiWidth - halfWidth);
             }
-            xPositions.add(new WaypointLabelLocation(label, x));
+            xPositions.add(new WaypointMarkerLocation(marker, x));
         });
 
-        xPositions.sort(Comparator.comparingInt(WaypointLabelLocation::location));
+        xPositions.sort(Comparator.comparingInt(WaypointMarkerLocation::location));
 
-        List<List<WaypointLabelLocation>> positions = new ArrayList<>();
+        List<List<WaypointMarkerLocation>> positions = new ArrayList<>();
         positions.add(xPositions);
 
         for (int line = 0; line < positions.size(); line++) {
-            List<WaypointLabelLocation> waypointLabelLocations = positions.get(line);
+            List<WaypointMarkerLocation> waypointMarkerLocations = positions.get(line);
             int i = 0;
-            while (i < waypointLabelLocations.size() - 1) {
-                WaypointLabelLocation left = waypointLabelLocations.get(i);
-                WaypointLabelLocation right = waypointLabelLocations.get(i + 1);
+            while (i < waypointMarkerLocations.size() - 1) {
+                WaypointMarkerLocation left = waypointMarkerLocations.get(i);
+                WaypointMarkerLocation right = waypointMarkerLocations.get(i + 1);
                 int leftX = left.location();
                 int rightX = right.location();
-                int leftWidth = minecraft.font.width(left.label());
-                int rightWidth = minecraft.font.width(right.label());
+                int leftWidth = minecraft.font.width(left.marker());
+                int rightWidth = minecraft.font.width(right.marker());
                 if (leftWidth / 2 + rightWidth / 2 > rightX - leftX) {
                     if (line + 1 == positions.size()) {
                         positions.add(new ArrayList<>());
                     }
-                    List<WaypointLabelLocation> nextLevel = positions.get(line + 1);
-                    WaypointLabelLocation removed = waypointLabelLocations.remove(i + 1);
+                    List<WaypointMarkerLocation> nextLevel = positions.get(line + 1);
+                    WaypointMarkerLocation removed = waypointMarkerLocations.remove(i + 1);
                     nextLevel.add(removed);
                 } else {
                     i++;
@@ -146,9 +146,9 @@ public final class WaypointRenderingHelper {
         }
 
         for (int line = 0; line < positions.size(); line++) {
-            List<WaypointLabelLocation> w = positions.get(line);
-            for (WaypointLabelLocation waypoint : w) {
-                guiGraphics.drawCenteredString(minecraft.font, waypoint.label(), waypoint.location(), 1 + line * minecraft.font.lineHeight, 0xFFFFFFFF);
+            List<WaypointMarkerLocation> w = positions.get(line);
+            for (WaypointMarkerLocation waypoint : w) {
+                guiGraphics.drawCenteredString(minecraft.font, waypoint.marker(), waypoint.location(), 1 + line * minecraft.font.lineHeight, 0xFFFFFFFF);
             }
         }
     }
@@ -182,12 +182,13 @@ public final class WaypointRenderingHelper {
             }
 
             Vec3 cameraPosition = camera.getPosition();
-            float distance = (float) waypointLocation.distToCenterSqr(cameraPosition);
-            distance = (float) Math.sqrt(distance) / 6;
+            float distance = (float) Math.sqrt(waypointLocation.distToCenterSqr(cameraPosition));
 
             Vec3 relWaypointPosition = new Vec3(waypointLocation).subtract(cameraPosition);
 
-            waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance, waypoint.color()));
+            boolean renderLabel = Configs.waypointLabelRenderLimit < 0 || distance <= Configs.waypointLabelRenderLimit;
+            boolean renderLineBox = Configs.waypointLineBoxRenderLimit < 0 || distance <= Configs.waypointLineBoxRenderLimit;
+            waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance, waypoint.color(), renderLabel, renderLineBox));
         });
 
         state.setData(WAYPOINT_LIST_KEY, new WaypointListState(camera.rotation(), waypointStates));
@@ -202,31 +203,36 @@ public final class WaypointRenderingHelper {
         for (WaypointState waypoint : waypointList.waypoints) {
             poseStack.pushPose();
 
-            AABB box = new AABB(waypoint.relPosition(), waypoint.relPosition().add(1));
-            float red = ARGB.redFloat(waypoint.color());
-            float green = ARGB.greenFloat(waypoint.color());
-            float blue = ARGB.blueFloat(waypoint.color());
-            ShapeRenderer.renderLineBox(poseStack.last(), bufferSource.getBuffer(NoDepthLayer.LINES_NO_DEPTH_LAYER), box, red, green, blue, 1);
+            if (waypoint.renderLineBox) {
+                AABB box = new AABB(waypoint.relPosition(), waypoint.relPosition().add(1));
+                float red = ARGB.redFloat(waypoint.color());
+                float green = ARGB.greenFloat(waypoint.color());
+                float blue = ARGB.blueFloat(waypoint.color());
+                ShapeRenderer.renderLineBox(poseStack.last(), bufferSource.getBuffer(NoDepthLayer.LINES_NO_DEPTH_LAYER), box, red, green, blue, 1);
+            }
 
-            poseStack.translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
-            poseStack.mulPose(waypointList.cameraRotation());
-            poseStack.scale(0.025f * waypoint.distance(), -0.025f * waypoint.distance(), 0.025f * waypoint.distance());
+            if (waypoint.renderLabel) {
+                poseStack.translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
+                poseStack.mulPose(waypointList.cameraRotation());
+                poseStack.scale(1 / 6f, 1 / 6f, 1 / 6f);
+                poseStack.scale(0.025f * waypoint.distance(), -0.025f * waypoint.distance(), 0.025f * waypoint.distance());
 
-            Font font = Minecraft.getInstance().font;
-            int width = font.width(waypoint.name()) / 2;
-            int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
-            font.drawInBatch(waypoint.name(), -width, 0, 0xFF_FFFFFF, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, backgroundColour, LightTexture.FULL_SKY);
+                Font font = Minecraft.getInstance().font;
+                int width = font.width(waypoint.name()) / 2;
+                int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
+                font.drawInBatch(waypoint.name(), -width, 0, 0xFF_FFFFFF, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, backgroundColour, LightTexture.FULL_SKY);
+            }
 
             poseStack.popPose();
         }
     }
 
-    private record WaypointLabelLocation(Component label, int location) {
+    private record WaypointMarkerLocation(Component marker, int location) {
     }
 
     private record WaypointListState(Quaternionfc cameraRotation, List<WaypointState> waypoints) {
     }
 
-    private record WaypointState(String name, Vec3 relPosition, float distance, int color) {
+    private record WaypointState(String name, Vec3 relPosition, float distance, int color, boolean renderLabel, boolean renderLineBox) {
     }
 }
