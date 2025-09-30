@@ -24,11 +24,11 @@ public class Configs {
         return Component.literal(Integer.toHexString(defaultColor.color()));
     }
 
-    @Config(comment = "waypointTextRenderLimit")
-    public static int waypointTextRenderLimit = -1;
+    @Config(comment = "waypointLabelRenderLimitComment")
+    public static int waypointLabelRenderLimit = -1;
 
-    private static Component waypointTextRenderLimit() {
-        return Component.translatable("commands.sw:config.waypointTextRenderLimit");
+    private static Component waypointLabelRenderLimitComment() {
+        return Component.translatable("commands.sw:config.waypointLabelRenderLimit");
     }
 
     @Config(comment = "waypointLineBoxRenderLimit")
@@ -38,10 +38,10 @@ public class Configs {
         return Component.translatable("commands.sw:config.waypointLineBoxRenderLimit");
     }
 
-    @Config(comment = "waypointLabelRenderLimitComment")
-    public static int waypointLabelRenderLimit = -1;
+    @Config(comment = "waypointMarkerRenderLimitComment")
+    public static int waypointMarkerRenderLimit = -1;
 
-    private static Component waypointLabelRenderLimitComment() {
-        return Component.translatable("commands.sw:config.waypointLabelRenderLimit.comment");
+    private static Component waypointMarkerRenderLimitComment() {
+        return Component.translatable("commands.sw:config.waypointMarkerRenderLimit.comment");
     }
 }
