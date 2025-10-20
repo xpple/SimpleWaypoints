@@ -1,5 +1,6 @@
 package dev.xpple.simplewaypoints.commands;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -220,7 +221,7 @@ public class WaypointCommand {
         }
 
         source.sendFeedback(Component.translatable("commands.sw:waypoint.get", name, formatCoordinates(waypoint.location()), waypoint.dimension().location(), waypoint.visible() ? Component.translatable("commands.sw:waypoint.shown") : Component.translatable("commands.sw:waypoint.hidden")));
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static Component formatCoordinates(BlockPos waypoint) {
