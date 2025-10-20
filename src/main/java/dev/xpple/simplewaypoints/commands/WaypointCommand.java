@@ -3,6 +3,7 @@ package dev.xpple.simplewaypoints.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -33,6 +34,7 @@ import static net.minecraft.commands.SharedSuggestionProvider.*;
 
 public class WaypointCommand {
     private static final SimpleWaypointsAPI API = SimpleWaypointsAPI.getInstance();
+    private static final SimpleCommandExceptionType WAYPOINT_NOT_FOUND_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("commands.sw:waypoint.notFound"));
 
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         LiteralCommandNode<FabricClientCommandSource> waypointNode = dispatcher.register(literal("sw:waypoint")
@@ -209,12 +211,12 @@ public class WaypointCommand {
         return count[0];
     }
 
-    private static int get(FabricClientCommandSource source, String name) {
+    private static int get(FabricClientCommandSource source, String name) throws CommandSyntaxException {
         Waypoint waypoint = API.getWorldWaypoints(API.getWorldIdentifier(source.getClient())).get(name);
 
         if (waypoint == null) {
-            source.sendFeedback(Component.translatable("commands.sw:waypoint.invalidWaypointName", name));
-            return 0;
+            source.sendFeedback(Component.translatable("commands.sw:waypoint.notFound", name));
+            throw WAYPOINT_NOT_FOUND_EXCEPTION.create();
         }
 
         source.sendFeedback(Component.translatable("commands.sw:waypoint.get", name, formatCoordinates(waypoint.location()), waypoint.dimension().location(), waypoint.visible() ? Component.translatable("commands.sw:waypoint.shown") : Component.translatable("commands.sw:waypoint.hidden")));
