@@ -14,6 +14,7 @@
   "commands.sw:waypoint.setcolor.success": "Color of \"%s\" successfully changed to %s",
   "commands.sw:waypoint.list.empty": "No available waypoints",
   "commands.sw:waypoint.list": "- \"%s\" at %s in %s (%s)",
+  "commands.sw:waypoint.get": "\"%s\" at %s in %s (%s)",
   "commands.sw:waypoint.shown": "shown",
   "commands.sw:waypoint.hidden": "hidden",
   "commands.sw:waypoint.saveFailed": "Could not save waypoints file!",

@@ -1,8 +1,10 @@
 package dev.xpple.simplewaypoints.commands;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -33,6 +35,7 @@ import static net.minecraft.commands.SharedSuggestionProvider.*;
 
 public class WaypointCommand {
     private static final SimpleWaypointsAPI API = SimpleWaypointsAPI.getInstance();
+    private static final DynamicCommandExceptionType WAYPOINT_NOT_FOUND_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.notFound", name));
 
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         LiteralCommandNode<FabricClientCommandSource> waypointNode = dispatcher.register(literal("sw:waypoint")
@@ -76,7 +79,11 @@ public class WaypointCommand {
             .then(literal("list")
                 .executes(ctx -> list(ctx.getSource()))
                 .then(argument("current", bool())
-                    .executes(ctx -> list(ctx.getSource(), getBool(ctx, "current"))))));
+                    .executes(ctx -> list(ctx.getSource(), getBool(ctx, "current")))))
+            .then(literal("get")
+                .then(argument("name", word())
+                    .suggests((ctx, builder) -> getWaypointSuggestions(ctx, builder, WaypointSuggestions.ALL))
+                    .executes(ctx -> get(ctx.getSource(), getString(ctx, "name"))))));
 
         API.getCommandAliases().forEach(alias -> dispatcher.register(literal(alias).redirect(waypointNode)));
     }
@@ -203,6 +210,17 @@ public class WaypointCommand {
             worldWaypoints.forEach((name, waypoint) -> source.sendFeedback(Component.translatable("commands.sw:waypoint.list", name, formatCoordinates(waypoint.location()), waypoint.dimension().location(), getVisibilityComponent.apply(waypoint.visible()))));
         });
         return count[0];
+    }
+
+    private static int get(FabricClientCommandSource source, String name) throws CommandSyntaxException {
+        Waypoint waypoint = API.getWorldWaypoints(API.getWorldIdentifier(source.getClient())).get(name);
+
+        if (waypoint == null) {
+            throw WAYPOINT_NOT_FOUND_EXCEPTION.create(name);
+        }
+
+        source.sendFeedback(Component.translatable("commands.sw:waypoint.get", name, formatCoordinates(waypoint.location()), waypoint.dimension().location(), waypoint.visible() ? Component.translatable("commands.sw:waypoint.shown") : Component.translatable("commands.sw:waypoint.hidden")));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static Component formatCoordinates(BlockPos waypoint) {
