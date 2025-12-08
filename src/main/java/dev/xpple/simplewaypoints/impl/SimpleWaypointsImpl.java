@@ -11,6 +11,7 @@ import dev.xpple.simplewaypoints.api.Waypoint;
 import dev.xpple.simplewaypoints.config.Configs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -59,16 +60,17 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
 
     @Override
     public String getWorldIdentifier(Minecraft minecraft) {
-        String worldIdentifier;
         if (minecraft.hasSingleplayerServer()) {
             IntegratedServer singleplayerServer = Objects.requireNonNull(minecraft.getSingleplayerServer());
             // the level id remains the same even after the level is renamed
-            worldIdentifier = singleplayerServer.storageSource.getLevelId();
-        } else {
-            ClientPacketListener packetListener = Objects.requireNonNull(minecraft.getConnection());
-            worldIdentifier = packetListener.getConnection().getRemoteAddress().toString();
+            return singleplayerServer.storageSource.getLevelId();
         }
-        return worldIdentifier;
+        ClientPacketListener packetListener = Objects.requireNonNull(minecraft.getConnection());
+        ServerData serverData = Objects.requireNonNull(packetListener.getServerData());
+        if (serverData.isRealm()) {
+            return Objects.requireNonNull(minecraft.quickPlayLog().worldData).id;
+        }
+        return packetListener.getConnection().getRemoteAddress().toString();
     }
 
     @Override
