@@ -68,7 +68,7 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
         ClientPacketListener packetListener = Objects.requireNonNull(minecraft.getConnection());
         ServerData serverData = Objects.requireNonNull(packetListener.getServerData());
         if (serverData.isRealm()) {
-            return Objects.requireNonNull(minecraft.quickPlayLog().worldData).id;
+            return Objects.requireNonNull(minecraft.quickPlayLog().worldData).id();
         }
         return packetListener.getConnection().getRemoteAddress().toString();
     }
