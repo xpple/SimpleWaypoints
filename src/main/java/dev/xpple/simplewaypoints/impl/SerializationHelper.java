@@ -8,13 +8,13 @@ import dev.xpple.simplewaypoints.SimpleWaypoints;
 import dev.xpple.simplewaypoints.api.Waypoint;
 import dev.xpple.simplewaypoints.config.Configs;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public final class SerializationHelper {
                 .collect(CompoundTag::new, (result, entry) -> {
                     CompoundTag waypoint = new CompoundTag();
                     waypoint.store("pos", BlockPos.CODEC, entry.getValue().location());
-                    String dimension = entry.getValue().dimension().location().toString();
+                    String dimension = entry.getValue().dimension().identifier().toString();
                     waypoint.putString("Dimension", dimension);
                     waypoint.putBoolean("visible", entry.getValue().visible());
                     waypoint.putInt("color", entry.getValue().color());

@@ -117,14 +117,14 @@ public class WaypointCommand {
     private static int add(FabricClientCommandSource source, String name, BlockPos pos, ResourceKey<Level> dimension) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
         int returnValue = API.addWaypoint(worldIdentifier, dimension, name, pos);
-        source.sendFeedback(Component.translatable("commands.sw:waypoint.add.success", name, formatCoordinates(pos), dimension.location()));
+        source.sendFeedback(Component.translatable("commands.sw:waypoint.add.success", name, formatCoordinates(pos), dimension.identifier()));
         return returnValue;
     }
 
     private static int add(FabricClientCommandSource source, String name, BlockPos pos, ResourceKey<Level> dimension, int color) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
         int returnValue = API.addWaypoint(worldIdentifier, dimension, name, pos, color);
-        source.sendFeedback(Component.translatable("commands.sw:waypoint.addWithColor.success", name, formatCoordinates(pos), dimension.location(), Integer.toHexString(color)));
+        source.sendFeedback(Component.translatable("commands.sw:waypoint.addWithColor.success", name, formatCoordinates(pos), dimension.identifier(), Integer.toHexString(color)));
         return returnValue;
     }
 
@@ -152,7 +152,7 @@ public class WaypointCommand {
     private static int edit(FabricClientCommandSource source, String name, BlockPos pos, ResourceKey<Level> dimension) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
         int returnValue = API.editWaypoint(worldIdentifier, name, dimension, pos);
-        source.sendFeedback(Component.translatable("commands.sw:waypoint.editWithDimension.success", name, formatCoordinates(pos), dimension.location()));
+        source.sendFeedback(Component.translatable("commands.sw:waypoint.editWithDimension.success", name, formatCoordinates(pos), dimension.identifier()));
         return returnValue;
     }
 
@@ -189,7 +189,7 @@ public class WaypointCommand {
                 return 0;
             }
 
-            worldWaypoints.forEach((name, waypoint) -> source.sendFeedback(Component.translatable("commands.sw:waypoint.list", name, formatCoordinates(waypoint.location()), waypoint.dimension().location(), getVisibilityComponent.apply(waypoint.visible()))));
+            worldWaypoints.forEach((name, waypoint) -> source.sendFeedback(Component.translatable("commands.sw:waypoint.list", name, formatCoordinates(waypoint.location()), waypoint.dimension().identifier(), getVisibilityComponent.apply(waypoint.visible()))));
             return worldWaypoints.size();
         }
 
@@ -207,7 +207,7 @@ public class WaypointCommand {
             count[0] += worldWaypoints.size();
 
             source.sendFeedback(Component.literal(worldIdentifier).append(":"));
-            worldWaypoints.forEach((name, waypoint) -> source.sendFeedback(Component.translatable("commands.sw:waypoint.list", name, formatCoordinates(waypoint.location()), waypoint.dimension().location(), getVisibilityComponent.apply(waypoint.visible()))));
+            worldWaypoints.forEach((name, waypoint) -> source.sendFeedback(Component.translatable("commands.sw:waypoint.list", name, formatCoordinates(waypoint.location()), waypoint.dimension().identifier(), getVisibilityComponent.apply(waypoint.visible()))));
         });
         return count[0];
     }
@@ -219,7 +219,7 @@ public class WaypointCommand {
             throw WAYPOINT_NOT_FOUND_EXCEPTION.create(name);
         }
 
-        source.sendFeedback(Component.translatable("commands.sw:waypoint.get", name, formatCoordinates(waypoint.location()), waypoint.dimension().location(), waypoint.visible() ? Component.translatable("commands.sw:waypoint.shown") : Component.translatable("commands.sw:waypoint.hidden")));
+        source.sendFeedback(Component.translatable("commands.sw:waypoint.get", name, formatCoordinates(waypoint.location()), waypoint.dimension().identifier(), waypoint.visible() ? Component.translatable("commands.sw:waypoint.shown") : Component.translatable("commands.sw:waypoint.hidden")));
         return Command.SINGLE_SUCCESS;
     }
 

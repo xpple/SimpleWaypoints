@@ -6,8 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,11 +19,11 @@ public interface SimpleWaypointsAPI {
 
     Set<String> getCommandAliases();
 
-    @Nullable String getWorldIdentifier(Minecraft minecraft);
+    String getWorldIdentifier(Minecraft minecraft);
 
-    @NotNull Map<String, Map<String, Waypoint>> getAllWaypoints();
+    Map<String, Map<String, Waypoint>> getAllWaypoints();
 
-    @NotNull Map<String, Waypoint> getWorldWaypoints(String worldIdentifier);
+    Map<String, Waypoint> getWorldWaypoints(String worldIdentifier);
 
     int addWaypoint(String worldIdentifier, ResourceKey<Level> dimension, String name, BlockPos pos) throws CommandSyntaxException;
 

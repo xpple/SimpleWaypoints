@@ -16,14 +16,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,28 +58,21 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     }
 
     @Override
-    public @Nullable String getWorldIdentifier(Minecraft minecraft) {
+    public String getWorldIdentifier(Minecraft minecraft) {
         String worldIdentifier;
         if (minecraft.hasSingleplayerServer()) {
-            IntegratedServer singleplayerServer = minecraft.getSingleplayerServer();
-            // should never be null, but to be sure...
-            if (singleplayerServer == null) {
-                return null;
-            }
+            IntegratedServer singleplayerServer = Objects.requireNonNull(minecraft.getSingleplayerServer());
             // the level id remains the same even after the level is renamed
             worldIdentifier = singleplayerServer.storageSource.getLevelId();
         } else {
-            ClientPacketListener packetListener = minecraft.getConnection();
-            if (packetListener == null) {
-                return null;
-            }
+            ClientPacketListener packetListener = Objects.requireNonNull(minecraft.getConnection());
             worldIdentifier = packetListener.getConnection().getRemoteAddress().toString();
         }
         return worldIdentifier;
     }
 
     @Override
-    public @NotNull Map<String, Map<String, Waypoint>> getAllWaypoints() {
+    public Map<String, Map<String, Waypoint>> getAllWaypoints() {
         return waypoints.entrySet()
             .stream()
             .map(entry -> Map.entry(entry.getKey(), Collections.unmodifiableMap(entry.getValue())))
@@ -88,7 +80,7 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     }
 
     @Override
-    public @NotNull Map<String, Waypoint> getWorldWaypoints(String worldIdentifier) {
+    public Map<String, Waypoint> getWorldWaypoints(String worldIdentifier) {
         Map<String, Waypoint> worldWaypoints = waypoints.getOrDefault(worldIdentifier, Collections.emptyMap());
         return Collections.unmodifiableMap(worldWaypoints);
     }
