@@ -41,18 +41,21 @@ public final class SerializationHelper {
             rootTag.putInt("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
             CompoundTag compoundTag = new CompoundTag();
             SimpleWaypointsImpl.waypoints.forEach((worldIdentifier, worldWaypoints) -> {
-                if (!worldWaypoints.isEmpty()) {
-                    compoundTag.put(worldIdentifier, worldWaypoints.entrySet().stream()
-                            .collect(CompoundTag::new, (result, entry) -> {
-                                        CompoundTag waypoint = new CompoundTag();
-                                        waypoint.store("pos", BlockPos.CODEC, entry.getValue().location());
-                                        String dimension = entry.getValue().dimension().identifier().toString();
-                                        waypoint.putString("Dimension", dimension);
-                                        waypoint.putBoolean("visible", entry.getValue().visible());
-                                        waypoint.putInt("color", entry.getValue().color());
-                                        result.put(entry.getKey(), waypoint);
-                                    }, CompoundTag::merge));
+                if (worldWaypoints.isEmpty()) {
+                    return;
                 }
+
+                compoundTag.put(worldIdentifier, worldWaypoints.entrySet().stream()
+                    .collect(
+                        CompoundTag::new, (result, entry) -> {
+                            CompoundTag waypoint = new CompoundTag();
+                            waypoint.store("pos", BlockPos.CODEC, entry.getValue().location());
+                            String dimension = entry.getValue().dimension().identifier().toString();
+                            waypoint.putString("Dimension", dimension);
+                            waypoint.putBoolean("visible", entry.getValue().visible());
+                            waypoint.putInt("color", entry.getValue().color());
+                            result.put(entry.getKey(), waypoint);
+                        }, CompoundTag::merge));
             });
             rootTag.put("Waypoints", compoundTag);
             Path newFile = Files.createTempFile(SimpleWaypoints.MOD_CONFIG_PATH, "waypoints", ".dat");
