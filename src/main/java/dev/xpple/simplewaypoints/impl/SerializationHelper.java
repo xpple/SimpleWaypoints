@@ -46,16 +46,15 @@ public final class SerializationHelper {
                 }
 
                 compoundTag.put(worldIdentifier, worldWaypoints.entrySet().stream()
-                    .collect(
-                        CompoundTag::new, (result, entry) -> {
-                            CompoundTag waypoint = new CompoundTag();
-                            waypoint.store("pos", BlockPos.CODEC, entry.getValue().location());
-                            String dimension = entry.getValue().dimension().identifier().toString();
-                            waypoint.putString("Dimension", dimension);
-                            waypoint.putBoolean("visible", entry.getValue().visible());
-                            waypoint.putInt("color", entry.getValue().color());
-                            result.put(entry.getKey(), waypoint);
-                        }, CompoundTag::merge));
+                    .collect(CompoundTag::new, (result, entry) -> {
+                        CompoundTag waypoint = new CompoundTag();
+                        waypoint.store("pos", BlockPos.CODEC, entry.getValue().location());
+                        String dimension = entry.getValue().dimension().identifier().toString();
+                        waypoint.putString("Dimension", dimension);
+                        waypoint.putBoolean("visible", entry.getValue().visible());
+                        waypoint.putInt("color", entry.getValue().color());
+                        result.put(entry.getKey(), waypoint);
+                    }, CompoundTag::merge));
             });
             rootTag.put("Waypoints", compoundTag);
             Path newFile = Files.createTempFile(SimpleWaypoints.MOD_CONFIG_PATH, "waypoints", ".dat");
