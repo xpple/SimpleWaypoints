@@ -22,9 +22,16 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Publish package
-        run: ./gradlew publish
+        run: ./gradlew publish --stacktrace
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
           MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
+
+          PORTAL_USER: ${{ secrets.PORTAL_USER }}
+          PORTAL_TOKEN: ${{ secrets.PORTAL_TOKEN }}
+
+          ORG_GRADLE_PROJECT_signingKeyId: ${{ vars.ORG_GRADLE_PROJECT_SIGNINGKEYID }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}

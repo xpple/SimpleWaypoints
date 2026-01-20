@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "SimpleWaypoints",
-  "description": "Minecraft Fabric mod providing simple client-sided waypoints.",
+  "description": "${mod_description}",
   "authors": [
     "xpple"
   ],
