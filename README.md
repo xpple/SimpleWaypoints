@@ -12,7 +12,15 @@ Minecraft Fabric mod providing simple client-sided waypoints.
 ## API Usage
 Replace `${simplewaypoints_version}` with the artifact version.
 
-You may choose between my own maven repository and GitHub's package repository.
+You may choose between Maven Central, my own Maven repository and GitHub's package repository.
+
+### Maven Central
+```gradle
+repositories {
+    mavenCentral()
+}
+```
+
 ### My own
 ```gradle
 repositories {
@@ -21,7 +29,8 @@ repositories {
     }
 }
 ```
-### GitHub packages
+
+### GitHub Packages
 ```gradle
 repositories {
     maven {
@@ -33,6 +42,7 @@ repositories {
     }
 }
 ```
+
 Import it:
 ```gradle
 dependencies {
