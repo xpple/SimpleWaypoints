@@ -19,6 +19,8 @@ public interface SimpleWaypointsAPI {
 
     Set<String> getCommandAliases();
 
+    Set<String> getWorldIdentifiers();
+
     String getWorldIdentifier(Minecraft minecraft);
 
     Map<String, Map<String, Waypoint>> getAllWaypoints();
@@ -40,4 +42,8 @@ public interface SimpleWaypointsAPI {
     int setWaypointVisibility(String worldIdentifier, String name, boolean visible) throws CommandSyntaxException;
 
     int setWaypointColor(String worldIdentifier, String name, int color) throws CommandSyntaxException;
+
+    int setWorldIdentifierCache(String worldIdentifier) throws CommandSyntaxException;
+
+    int resetWorldIdentifierCache() throws CommandSyntaxException;
 }
