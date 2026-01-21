@@ -11,6 +11,8 @@
   "commands.sw:waypoint.editWithDimension.success": "Waypoint \"%s\" has successfully been relocated to %s in %s",
   "commands.sw:waypoint.show.success": "Now showing %s",
   "commands.sw:waypoint.hide.success": "Now hiding %s",
+  "commands.sw:waypoint.cache.reset.success": "World identifier cache successfully reset",
+  "commands.sw:waypoint.cache.set.success": "World identifier cache successfully set to %s",
   "commands.sw:waypoint.setcolor.success": "Color of \"%s\" successfully changed to %s",
   "commands.sw:waypoint.list.empty": "No available waypoints",
   "commands.sw:waypoint.list": "- \"%s\" at %s in %s (%s)",
