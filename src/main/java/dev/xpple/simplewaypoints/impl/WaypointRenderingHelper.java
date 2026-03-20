@@ -30,7 +30,6 @@ import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
-import org.joml.Quaternionfc;
 import org.joml.Vector2d;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class WaypointRenderingHelper {
-    private static final RenderStateDataKey<WaypointListState> WAYPOINT_LIST_KEY = RenderStateDataKey.create(() -> "SimpleWaypoints waypoint list");
+    private static final RenderStateDataKey<List<WaypointState>> WAYPOINT_LIST_KEY = RenderStateDataKey.create(() -> "SimpleWaypoints waypoint list");
 
     private WaypointRenderingHelper() {
     }
@@ -190,43 +189,37 @@ public final class WaypointRenderingHelper {
             waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance, waypoint.color(), renderLabel, renderLineBox));
         });
 
-        context.levelState().setData(WAYPOINT_LIST_KEY, new WaypointListState(context.camera().rotation(), waypointStates));
+        context.levelState().setData(WAYPOINT_LIST_KEY, waypointStates);
     }
 
     private static void renderWaypointBoxes(LevelRenderContext context) {
-        WaypointListState waypointList = context.levelState().getData(WAYPOINT_LIST_KEY);
-        if (waypointList == null) {
+        List<WaypointState> waypoints = context.levelState().getData(WAYPOINT_LIST_KEY);
+        if (waypoints == null) {
             return;
         }
 
         PoseStack poseStack = context.poseStack();
-        for (WaypointState waypoint : waypointList.waypoints) {
-            poseStack.pushPose();
-
+        for (WaypointState waypoint : waypoints) {
             if (waypoint.renderLineBox) {
                 ShapeRenderer.renderShape(poseStack, context.bufferSource().getBuffer(NoDepthLayer.LINES_NO_DEPTH_LAYER), Shapes.block(), waypoint.relPosition().x, waypoint.relPosition().y, waypoint.relPosition().z, ARGB.opaque(waypoint.color()), 2);
             }
 
             if (waypoint.renderLabel) {
+                poseStack.pushPose();
                 poseStack.translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
                 poseStack.mulPose(context.levelState().cameraRenderState.orientation);
-                poseStack.scale(1 / 6f, 1 / 6f, 1 / 6f);
-                poseStack.scale(0.025f * waypoint.distance(), -0.025f * waypoint.distance(), 0.025f * waypoint.distance());
+                poseStack.scale(0.005f * waypoint.distance(), -0.005f * waypoint.distance(), 0.005f * waypoint.distance());
 
                 Font font = Minecraft.getInstance().font;
                 int width = font.width(waypoint.name()) / 2;
                 int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
                 font.drawInBatch(waypoint.name(), -width, 0, 0xFF_FFFFFF, false, poseStack.last().pose(), context.bufferSource(), Font.DisplayMode.SEE_THROUGH, backgroundColour, LightCoordsUtil.FULL_SKY);
+                poseStack.popPose();
             }
-
-            poseStack.popPose();
         }
     }
 
     private record WaypointMarkerLocation(Component marker, int location) {
-    }
-
-    private record WaypointListState(Quaternionfc cameraRotation, List<WaypointState> waypoints) {
     }
 
     private record WaypointState(String name, Vec3 relPosition, float distance, int color, boolean renderLabel, boolean renderLineBox) {
