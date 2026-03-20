@@ -1,7 +1,7 @@
 import dev.xpple.simplewaypoints.buildscript.GenerateBuildInfoTask
 
 plugins {
-    id 'fabric-loom' version "${fabric_loom_version}"
+    id 'net.fabricmc.fabric-loom' version "${fabric_loom_version}"
     id 'maven-publish'
     id 'signing'
     id 'dev.lukebemish.central-portal-publishing' version "${central_portal_publishing_version}"
@@ -26,10 +26,6 @@ repositories {
         url = 'https://maven.xpple.dev/maven2'
     }
     maven {
-        name = 'ParchmentMC'
-        url = 'https://maven.parchmentmc.org'
-    }
-    maven {
         name = 'DJtheRedstoner'
         url = 'https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1'
     }
@@ -37,20 +33,14 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.layered {
-        officialMojangMappings {
-            nameSyntheticMembers = true
-        }
-        parchment "org.parchmentmc.data:${project.parchment_mappings}"
-    }
-    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-    include modImplementation("dev.xpple:clientarguments:${project.clientarguments_version}")
-    include modImplementation("dev.xpple:betterconfig-fabric:${project.betterconfig_version}")
+    include implementation("dev.xpple:clientarguments:${project.clientarguments_version}")
+    include implementation("dev.xpple:betterconfig-fabric:${project.betterconfig_version}")
 
-    modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${project.devauth_version}") {
+    runtimeOnly("me.djtheredstoner:DevAuth-fabric:${project.devauth_version}") {
         exclude group: 'net.fabricmc', module: 'fabric-loader'
     }
 
@@ -85,12 +75,12 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 25
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 
     withSourcesJar()
     withJavadocJar()

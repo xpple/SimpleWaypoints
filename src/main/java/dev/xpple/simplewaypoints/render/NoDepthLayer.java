@@ -1,7 +1,8 @@
 package dev.xpple.simplewaypoints.render;
 
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
 import dev.xpple.simplewaypoints.SimpleWaypoints;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.LayeringTransform;
@@ -17,7 +18,7 @@ public final class NoDepthLayer {
     private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipelines.register(
         RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(SimpleWaypoints.MOD_ID, "pipeline/lines_no_depth"))
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true))
             .build()
     );
     public static final RenderType LINES_NO_DEPTH_LAYER = RenderType.create(
