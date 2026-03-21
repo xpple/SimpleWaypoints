@@ -30,7 +30,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CBlockPosArgument.*;
 import static dev.xpple.clientarguments.arguments.CDimensionArgument.*;
 import static dev.xpple.clientarguments.arguments.CHexColorArgument.*;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.*;
 import static net.minecraft.commands.SharedSuggestionProvider.*;
 
 public class WaypointCommand {
@@ -111,7 +111,7 @@ public class WaypointCommand {
     }
 
     private static int add(FabricClientCommandSource source, String name, BlockPos pos) throws CommandSyntaxException {
-        return add(source, name, pos, source.getWorld().dimension());
+        return add(source, name, pos, source.getLevel().dimension());
     }
 
     private static int add(FabricClientCommandSource source, String name, BlockPos pos, ResourceKey<Level> dimension) throws CommandSyntaxException {

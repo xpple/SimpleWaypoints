@@ -46,6 +46,6 @@ repositories {
 Import it:
 ```gradle
 dependencies {
-    include modImplementation("dev.xpple:simplewaypoints:${simplewaypoints_version}")
+    include implementation("dev.xpple:simplewaypoints:${simplewaypoints_version}")
 }
 ```

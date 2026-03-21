@@ -1,35 +1,36 @@
 package dev.xpple.simplewaypoints.impl;
 
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.vertex.PoseStack;
 import dev.xpple.simplewaypoints.SimpleWaypoints;
 import dev.xpple.simplewaypoints.api.Waypoint;
 import dev.xpple.simplewaypoints.config.Configs;
 import dev.xpple.simplewaypoints.render.NoDepthLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldExtractionContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
-import org.joml.Quaternionfc;
 import org.joml.Vector2d;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class WaypointRenderingHelper {
-    private static final RenderStateDataKey<WaypointListState> WAYPOINT_LIST_KEY = RenderStateDataKey.create(() -> "SimpleWaypoints waypoint list");
+    private static final RenderStateDataKey<List<WaypointState>> WAYPOINT_LIST_KEY = RenderStateDataKey.create(() -> "SimpleWaypoints waypoint list");
 
     private WaypointRenderingHelper() {
     }
@@ -47,11 +48,11 @@ public final class WaypointRenderingHelper {
 
     public static void registerEvents() {
         HudElementRegistry.addLast(HUD_LAYER_ID, WaypointRenderingHelper::renderWaypointMarkers);
-        WorldRenderEvents.END_EXTRACTION.register(WaypointRenderingHelper::extractWaypointBoxes);
-        WorldRenderEvents.END_MAIN.register(WaypointRenderingHelper::renderWaypointBoxes);
+        LevelRenderEvents.END_EXTRACTION.register(WaypointRenderingHelper::extractWaypointBoxes);
+        LevelRenderEvents.END_MAIN.register(WaypointRenderingHelper::renderWaypointBoxes);
     }
 
-    private static void renderWaypointMarkers(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    private static void renderWaypointMarkers(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker) {
         String worldIdentifier = SimpleWaypointsImpl.INSTANCE.getWorldIdentifier(Minecraft.getInstance());
         Map<String, Waypoint> worldWaypoints = SimpleWaypointsImpl.waypoints.get(worldIdentifier);
         if (worldWaypoints == null) {
@@ -63,7 +64,7 @@ public final class WaypointRenderingHelper {
         Camera camera = gameRenderer.getMainCamera();
         Entity cameraEntity = camera.entity();
         float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(true);
-        double verticalFovRad = Math.toRadians(gameRenderer.getFov(camera, partialTicks, true));
+        double verticalFovRad = Math.toRadians(gameRenderer.getMainCamera().calculateFov(partialTicks));
         Window window = minecraft.getWindow();
         double aspectRatio = (double) window.getGuiScaledWidth() / window.getGuiScaledHeight();
         double horizontalFovRad = 2 * Math.atan(Math.tan(verticalFovRad / 2) * aspectRatio);
@@ -97,18 +98,18 @@ public final class WaypointRenderingHelper {
             int x;
             if (angleRad > horizontalFovRad / 2) {
                 int width = minecraft.font.width(marker);
-                x = right ? guiGraphics.guiWidth() - width / 2 : width / 2;
+                x = right ? guiGraphicsExtractor.guiWidth() - width / 2 : width / 2;
             } else {
                 // V is the view vector
                 // A is the leftmost visible direction
                 // B is the rightmost visible direction
                 // M is the intersection of the position -> waypoint line with AB
-                double mv = Math.tan(angleRad) * GameRenderer.PROJECTION_Z_NEAR;
-                double av = Math.tan(horizontalFovRad / 2) * GameRenderer.PROJECTION_Z_NEAR;
+                double mv = Math.tan(angleRad) * Camera.PROJECTION_Z_NEAR;
+                double av = Math.tan(horizontalFovRad / 2) * Camera.PROJECTION_Z_NEAR;
                 double ab = 2 * av;
                 double am = right ? mv + av : ab - (mv + av);
                 double perc = am / ab;
-                int guiWidth = guiGraphics.guiWidth();
+                int guiWidth = guiGraphicsExtractor.guiWidth();
                 int halfWidth = minecraft.font.width(marker) / 2;
                 x = Math.clamp((int) (perc * guiWidth), halfWidth, guiWidth - halfWidth);
             }
@@ -146,12 +147,12 @@ public final class WaypointRenderingHelper {
         for (int line = 0; line < positions.size(); line++) {
             List<WaypointMarkerLocation> w = positions.get(line);
             for (WaypointMarkerLocation waypoint : w) {
-                guiGraphics.drawCenteredString(minecraft.font, waypoint.marker(), waypoint.location(), 1 + line * minecraft.font.lineHeight, 0xFFFFFFFF);
+                guiGraphicsExtractor.centeredText(minecraft.font, waypoint.marker(), waypoint.location(), 1 + line * minecraft.font.lineHeight, 0xFFFFFFFF);
             }
         }
     }
 
-    private static void extractWaypointBoxes(WorldExtractionContext context) {
+    private static void extractWaypointBoxes(LevelExtractionContext context) {
         String worldIdentifier = SimpleWaypointsImpl.INSTANCE.getWorldIdentifier(Minecraft.getInstance());
         Map<String, Waypoint> worldWaypoints = SimpleWaypointsImpl.waypoints.get(worldIdentifier);
         if (worldWaypoints == null) {
@@ -189,42 +190,39 @@ public final class WaypointRenderingHelper {
             waypointStates.add(new WaypointState(waypointName, relWaypointPosition, distance, waypoint.color(), renderLabel, renderLineBox));
         });
 
-        context.worldState().setData(WAYPOINT_LIST_KEY, new WaypointListState(context.camera().rotation(), waypointStates));
+        context.levelState().setData(WAYPOINT_LIST_KEY, waypointStates);
     }
 
-    private static void renderWaypointBoxes(WorldRenderContext context) {
-        WaypointListState waypointList = context.worldState().getData(WAYPOINT_LIST_KEY);
-        if (waypointList == null) {
+    private static void renderWaypointBoxes(LevelRenderContext context) {
+        List<WaypointState> waypoints = context.levelState().getData(WAYPOINT_LIST_KEY);
+        if (waypoints == null) {
             return;
         }
 
-        for (WaypointState waypoint : waypointList.waypoints) {
-            context.matrices().pushPose();
-
+        PoseStack poseStack = context.poseStack();
+        for (WaypointState waypoint : waypoints) {
             if (waypoint.renderLineBox) {
-                ShapeRenderer.renderShape( context.matrices(), context.consumers().getBuffer(NoDepthLayer.LINES_NO_DEPTH_LAYER), Shapes.block(), waypoint.relPosition().x, waypoint.relPosition().y, waypoint.relPosition().z, ARGB.opaque(waypoint.color()), 2);
+                ShapeRenderer.renderShape(poseStack, context.bufferSource().getBuffer(NoDepthLayer.LINES_NO_DEPTH_LAYER), Shapes.block(), waypoint.relPosition().x, waypoint.relPosition().y, waypoint.relPosition().z, ARGB.opaque(waypoint.color()), 2);
             }
 
             if (waypoint.renderLabel) {
-                context.matrices().translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
-                context.matrices().mulPose(waypointList.cameraRotation());
-                context.matrices().scale(1 / 6f, 1 / 6f, 1 / 6f);
-                context.matrices().scale(0.025f * waypoint.distance(), -0.025f * waypoint.distance(), 0.025f * waypoint.distance());
+                poseStack.pushPose();
+                poseStack.translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
+                poseStack.mulPose(context.levelState().cameraRenderState.orientation);
+                poseStack.scale(0.005f * waypoint.distance(), -0.005f * waypoint.distance(), 0.005f * waypoint.distance());
 
                 Font font = Minecraft.getInstance().font;
                 int width = font.width(waypoint.name()) / 2;
                 int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
-                font.drawInBatch(waypoint.name(), -width, 0, 0xFF_FFFFFF, false,  context.matrices().last().pose(), context.consumers(), Font.DisplayMode.SEE_THROUGH, backgroundColour, LightTexture.FULL_SKY);
+                font.drawInBatch(waypoint.name(), -width, 0, 0xFF_FFFFFF, false, poseStack.last().pose(), context.bufferSource(), Font.DisplayMode.SEE_THROUGH, backgroundColour, LightCoordsUtil.FULL_SKY);
+                poseStack.popPose();
             }
-
-            context.matrices().popPose();
         }
+
+        ((MultiBufferSource.BufferSource) context.bufferSource()).endBatch();
     }
 
     private record WaypointMarkerLocation(Component marker, int location) {
-    }
-
-    private record WaypointListState(Quaternionfc cameraRotation, List<WaypointState> waypoints) {
     }
 
     private record WaypointState(String name, Vec3 relPosition, float distance, int color, boolean renderLabel, boolean renderLineBox) {
