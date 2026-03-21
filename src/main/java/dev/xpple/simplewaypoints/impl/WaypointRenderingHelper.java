@@ -20,6 +20,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -217,6 +218,8 @@ public final class WaypointRenderingHelper {
                 poseStack.popPose();
             }
         }
+
+        ((MultiBufferSource.BufferSource) context.bufferSource()).endBatch();
     }
 
     private record WaypointMarkerLocation(Component marker, int location) {
