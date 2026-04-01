@@ -12,6 +12,7 @@ import dev.xpple.simplewaypoints.config.Configs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.quickplay.QuickPlayLog;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -68,7 +69,12 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
         ClientPacketListener packetListener = Objects.requireNonNull(minecraft.getConnection());
         ServerData serverData = Objects.requireNonNull(packetListener.getServerData());
         if (serverData.isRealm()) {
-            return Objects.requireNonNull(minecraft.quickPlayLog().worldData).id();
+            QuickPlayLog.QuickPlayWorld worldData = minecraft.quickPlayLog().worldData;
+            if (worldData == null) {
+                LOGGER.warn("Could not get world name from quick play world data!");
+                return "realm";
+            }
+            return worldData.id();
         }
         return packetListener.getConnection().getRemoteAddress().toString();
     }
