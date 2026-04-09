@@ -37,6 +37,8 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
 
     static final Map<String, Map<String, Waypoint>> waypoints = new HashMap<>();
 
+    private static boolean hasWarnedRealmsQuickPlayData = false;
+
     private static final DynamicCommandExceptionType INVALID_WAYPOINT_NAME_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.invalidWaypointName", name));
     private static final DynamicCommandExceptionType ALREADY_EXISTS_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.alreadyExists", name));
     private static final DynamicCommandExceptionType NOT_FOUND_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.notFound", name));
@@ -71,7 +73,10 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
         if (serverData.isRealm()) {
             QuickPlayLog.QuickPlayWorld worldData = minecraft.quickPlayLog().worldData;
             if (worldData == null) {
-                LOGGER.warn("Could not get world name from quick play world data!");
+                if (!hasWarnedRealmsQuickPlayData) {
+                    LOGGER.warn("Could not get world name from quick play world data!");
+                    hasWarnedRealmsQuickPlayData = true;
+                }
                 return "realm";
             }
             return worldData.id();
