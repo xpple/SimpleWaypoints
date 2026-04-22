@@ -18,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Collections;
@@ -43,6 +44,8 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     private static final DynamicCommandExceptionType ALREADY_EXISTS_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.alreadyExists", name));
     private static final DynamicCommandExceptionType NOT_FOUND_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.notFound", name));
 
+    private static @Nullable String worldIdentifierCache = null;
+
     static {
         try {
             SerializationHelper.loadFile();
@@ -62,7 +65,15 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     }
 
     @Override
+    public Set<String> getWorldIdentifiers() {
+        return waypoints.keySet();
+    }
+
+    @Override
     public String getWorldIdentifier(Minecraft minecraft) {
+        if (worldIdentifierCache != null) {
+            return worldIdentifierCache;
+        }
         if (minecraft.hasSingleplayerServer()) {
             IntegratedServer singleplayerServer = Objects.requireNonNull(minecraft.getSingleplayerServer());
             // the level id remains the same even after the level is renamed
@@ -220,6 +231,18 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
         }
 
         SerializationHelper.saveFile();
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public int setWorldIdentifierCache(String worldIdentifier) {
+        worldIdentifierCache = worldIdentifier;
+        return Command.SINGLE_SUCCESS;
+    }
+
+    @Override
+    public int resetWorldIdentifierCache() {
+        worldIdentifierCache = null;
         return Command.SINGLE_SUCCESS;
     }
 }
