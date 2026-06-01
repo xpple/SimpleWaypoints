@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import dev.xpple.betterconfig.api.ModConfigBuilder;
 import dev.xpple.simplewaypoints.commands.BuildInfoCommand;
+import dev.xpple.simplewaypoints.commands.ImportCommand;
 import dev.xpple.simplewaypoints.commands.WaypointCommand;
 import dev.xpple.simplewaypoints.config.Configs;
 import dev.xpple.simplewaypoints.config.WaypointColor;
@@ -48,6 +49,7 @@ public final class SimpleWaypoints implements ClientModInitializer {
 
     private static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext context) {
         BuildInfoCommand.register(dispatcher);
+        ImportCommand.register(dispatcher);
         WaypointCommand.register(dispatcher);
     }
 }

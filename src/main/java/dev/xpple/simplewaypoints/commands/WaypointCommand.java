@@ -33,7 +33,10 @@ import static dev.xpple.clientarguments.arguments.CHexColorArgument.*;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.*;
 import static net.minecraft.commands.SharedSuggestionProvider.*;
 
-public class WaypointCommand {
+public final class WaypointCommand {
+    private WaypointCommand() {
+    }
+
     private static final SimpleWaypointsAPI API = SimpleWaypointsAPI.getInstance();
     private static final DynamicCommandExceptionType WAYPOINT_NOT_FOUND_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.notFound", name));
 

@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,12 +63,21 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     @Override
     public String getWorldIdentifier(Minecraft minecraft) {
         if (minecraft.hasSingleplayerServer()) {
-            IntegratedServer singleplayerServer = Objects.requireNonNull(minecraft.getSingleplayerServer());
+            IntegratedServer singleplayerServer = minecraft.getSingleplayerServer();
+            if (singleplayerServer == null) {
+                return "unknown/singleplayer";
+            }
             // the level id remains the same even after the level is renamed
             return singleplayerServer.storageSource.getLevelId();
         }
-        ClientPacketListener packetListener = Objects.requireNonNull(minecraft.getConnection());
-        ServerData serverData = Objects.requireNonNull(packetListener.getServerData());
+        ClientPacketListener packetListener = minecraft.getConnection();
+        if (packetListener == null) {
+            return "unknown/multiplayer";
+        }
+        ServerData serverData = packetListener.getServerData();
+        if (serverData == null) {
+            return "unknown/multiplayer";
+        }
         if (serverData.isRealm()) {
             QuickPlayLog.QuickPlayWorld worldData = minecraft.quickPlayLog().worldData;
             if (worldData == null) {
@@ -77,7 +85,7 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
                     LOGGER.warn("Could not get world name from quick play world data!");
                     hasWarnedRealmsQuickPlayData = true;
                 }
-                return "realm";
+                return "unknown/realm";
             }
             return worldData.id();
         }
