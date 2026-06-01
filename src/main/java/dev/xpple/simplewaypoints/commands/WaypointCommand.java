@@ -86,7 +86,14 @@ public final class WaypointCommand {
             .then(literal("get")
                 .then(argument("name", word())
                     .suggests((ctx, builder) -> getWaypointSuggestions(ctx, builder, WaypointSuggestions.ALL))
-                    .executes(ctx -> get(ctx.getSource(), getString(ctx, "name"))))));
+                    .executes(ctx -> get(ctx.getSource(), getString(ctx, "name")))))
+            .then(literal("cache")
+                .then(literal("set")
+                    .then(argument("world", string())
+                        .suggests((ctx, builder) -> getWorldIdentifierSuggestions(ctx, builder))
+                        .executes(ctx -> setWorldIdentifierCache(ctx.getSource(), getString(ctx, "world")))))
+                .then(literal("reset")
+                    .executes(ctx -> resetWorldIdentifierCache(ctx.getSource())))));
 
         API.getCommandAliases().forEach(alias -> dispatcher.register(literal(alias).redirect(waypointNode)));
     }
@@ -111,6 +118,10 @@ public final class WaypointCommand {
                 }
             });
         return suggest(suggestions, builder);
+    }
+
+    private static CompletableFuture<Suggestions> getWorldIdentifierSuggestions(CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder) {
+        return suggest(API.getWorldIdentifiers().stream().map(s -> '\"' + s + '\"'), builder);
     }
 
     private static int add(FabricClientCommandSource source, String name, BlockPos pos) throws CommandSyntaxException {
@@ -224,6 +235,20 @@ public final class WaypointCommand {
 
         source.sendFeedback(Component.translatable("commands.sw:waypoint.get", name, formatCoordinates(waypoint.location()), waypoint.dimension().identifier(), waypoint.visible() ? Component.translatable("commands.sw:waypoint.shown") : Component.translatable("commands.sw:waypoint.hidden")));
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int setWorldIdentifierCache(FabricClientCommandSource source, String world) throws CommandSyntaxException {
+        int returnValue = API.setWorldIdentifierCache(world);
+
+        source.sendFeedback(Component.translatable("commands.sw:waypoint.cache.set.success", world));
+        return returnValue;
+    }
+
+    private static int resetWorldIdentifierCache(FabricClientCommandSource source) throws CommandSyntaxException {
+        int returnValue = API.resetWorldIdentifierCache();
+
+        source.sendFeedback(Component.translatable("commands.sw:waypoint.cache.reset.success"));
+        return returnValue;
     }
 
     private static Component formatCoordinates(BlockPos waypoint) {
