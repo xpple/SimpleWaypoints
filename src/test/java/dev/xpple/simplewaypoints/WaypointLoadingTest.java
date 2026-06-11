@@ -4,13 +4,13 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.xpple.simplewaypoints.config.Configs;
 import dev.xpple.simplewaypoints.impl.SerializationHelper;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.scores.TeamColor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +59,7 @@ public final class WaypointLoadingTest {
         assertEquals(new BlockPos(1, 2, 3), waypoint.location());
         assertEquals(Level.OVERWORLD, waypoint.dimension());
         assertTrue(waypoint.visible());
-        assertEquals(ChatFormatting.RED.getColor(), waypoint.color());
+        assertEquals(TeamColor.RED.rgb(), waypoint.color());
     }
 
     @Test
