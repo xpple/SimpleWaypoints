@@ -51,8 +51,8 @@ public final class WaypointLoadingTest {
 
         var waypoints = SerializationHelper.deserializeWaypoints(waypointTag);
         assertEquals(1, waypoints.size());
-        assertTrue(waypoints.containsKey("foo"));
-        var worldWaypoints = waypoints.get("foo");
+        assertTrue(waypoints.containsKey("singleplayer/foo"));
+        var worldWaypoints = waypoints.get("singleplayer/foo");
         assertEquals(1, worldWaypoints.size());
         assertTrue(worldWaypoints.containsKey("testWaypoint"));
         var waypoint = worldWaypoints.get("testWaypoint");
@@ -68,7 +68,7 @@ public final class WaypointLoadingTest {
             {
                 DataVersion: 4189,
                 Waypoints: {
-                    foo: {
+                    "multiplayer/foo": {
                         testWaypoint: {
                            pos: [I; 1, 2, 3],
                            Dimension: "minecraft:overworld"
@@ -80,8 +80,8 @@ public final class WaypointLoadingTest {
 
         var waypoints = SerializationHelper.deserializeWaypoints(waypointTag);
         assertEquals(1, waypoints.size());
-        assertTrue(waypoints.containsKey("foo"));
-        var worldWaypoints = waypoints.get("foo");
+        assertTrue(waypoints.containsKey("multiplayer/foo"));
+        var worldWaypoints = waypoints.get("multiplayer/foo");
         assertEquals(1, worldWaypoints.size());
         assertTrue(worldWaypoints.containsKey("testWaypoint"));
         var waypoint = worldWaypoints.get("testWaypoint");

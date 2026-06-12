@@ -56,15 +56,25 @@ public final class WaypointRenderingHelper {
 
     private static void renderWaypointMarkers(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker) {
         String worldIdentifier = SimpleWaypointsImpl.INSTANCE.getWorldIdentifier(Minecraft.getInstance());
+        if (worldIdentifier == null) {
+            return;
+        }
         Map<String, Waypoint> worldWaypoints = SimpleWaypointsImpl.waypoints.get(worldIdentifier);
         if (worldWaypoints == null) {
             return;
         }
 
         Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null) {
+            return;
+        }
+
         GameRenderer gameRenderer = minecraft.gameRenderer;
         Camera camera = gameRenderer.mainCamera();
         Entity cameraEntity = camera.entity();
+        if (cameraEntity == null) {
+            return;
+        }
         float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(true);
         double verticalFovRad = Math.toRadians(gameRenderer.mainCamera().calculateFov(partialTicks));
         Window window = minecraft.getWindow();
@@ -156,6 +166,9 @@ public final class WaypointRenderingHelper {
 
     private static void extractWaypointBoxes(LevelExtractionContext context) {
         String worldIdentifier = SimpleWaypointsImpl.INSTANCE.getWorldIdentifier(Minecraft.getInstance());
+        if (worldIdentifier == null) {
+            return;
+        }
         Map<String, Waypoint> worldWaypoints = SimpleWaypointsImpl.waypoints.get(worldIdentifier);
         if (worldWaypoints == null) {
             return;

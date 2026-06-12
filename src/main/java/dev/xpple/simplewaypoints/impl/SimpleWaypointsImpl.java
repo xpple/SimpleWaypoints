@@ -18,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.Collections;
@@ -61,22 +62,23 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     }
 
     @Override
+    @Nullable
     public String getWorldIdentifier(Minecraft minecraft) {
         if (minecraft.hasSingleplayerServer()) {
             IntegratedServer singleplayerServer = minecraft.getSingleplayerServer();
             if (singleplayerServer == null) {
-                return "unknown/singleplayer";
+                return null;
             }
             // the level id remains the same even after the level is renamed
-            return singleplayerServer.storageSource.getLevelId();
+            return "singleplayer/" + singleplayerServer.storageSource.getLevelId();
         }
         ClientPacketListener packetListener = minecraft.getConnection();
         if (packetListener == null) {
-            return "unknown/multiplayer";
+            return null;
         }
         ServerData serverData = packetListener.getServerData();
         if (serverData == null) {
-            return "unknown/multiplayer";
+            return null;
         }
         if (serverData.isRealm()) {
             QuickPlayLog.QuickPlayWorld worldData = minecraft.quickPlayLog().worldData;
@@ -85,11 +87,11 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
                     LOGGER.warn("Could not get world name from quick play world data!");
                     hasWarnedRealmsQuickPlayData = true;
                 }
-                return "unknown/realm";
+                return null;
             }
-            return worldData.id();
+            return "realm/" + worldData.id();
         }
-        return packetListener.getConnection().getRemoteAddress().toString();
+        return "multiplayer/" + packetListener.getConnection().getRemoteAddress();
     }
 
     @Override
@@ -101,9 +103,10 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
     }
 
     @Override
+    @Nullable
     public Map<String, Waypoint> getWorldWaypoints(String worldIdentifier) {
-        Map<String, Waypoint> worldWaypoints = waypoints.getOrDefault(worldIdentifier, Collections.emptyMap());
-        return Collections.unmodifiableMap(worldWaypoints);
+        Map<String, Waypoint> worldWaypoints = waypoints.get(worldIdentifier);
+        return worldWaypoints == null ? null : Collections.unmodifiableMap(worldWaypoints);
     }
 
     @Override

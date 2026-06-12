@@ -83,7 +83,7 @@ public final class SerializationHelper {
         CompoundTag compoundTag = rootTag.getCompoundOrEmpty("Waypoints");
         compoundTag.keySet().forEach(worldIdentifier -> {
             CompoundTag worldWaypoints = compoundTag.getCompoundOrEmpty(worldIdentifier);
-            waypoints.put(worldIdentifier, worldWaypoints.keySet().stream()
+            waypoints.put(upgradeWorldIdentifier(worldIdentifier), worldWaypoints.keySet().stream()
                 .collect(Collectors.toMap(Function.identity(), name -> {
                     CompoundTag waypoint = worldWaypoints.getCompoundOrEmpty(name);
                     BlockPos pos = waypoint.read("pos", BlockPos.CODEC).orElseThrow();
@@ -95,5 +95,18 @@ public final class SerializationHelper {
         });
 
         return waypoints;
+    }
+
+    private static String upgradeWorldIdentifier(String worldIdentifier) {
+        if (worldIdentifier.startsWith("singleplayer/") || worldIdentifier.startsWith("multiplayer/") || worldIdentifier.startsWith("realm/")) {
+            return worldIdentifier;
+        }
+
+        // There is some guessing involved here but it's good enough
+        if ((worldIdentifier.contains(".") && !worldIdentifier.contains("..")) || worldIdentifier.startsWith("localhost")) {
+            return "multiplayer/" + worldIdentifier;
+        } else {
+            return "singleplayer/" + worldIdentifier;
+        }
     }
 }

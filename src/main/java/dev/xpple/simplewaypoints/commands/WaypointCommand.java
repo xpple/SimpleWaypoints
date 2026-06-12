@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -38,6 +39,7 @@ public final class WaypointCommand {
     }
 
     private static final SimpleWaypointsAPI API = SimpleWaypointsAPI.getInstance();
+    public static final SimpleCommandExceptionType NO_WORLD_IDENTIFIER_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("commands.sw:waypoint.noWorldIdentifier"));
     private static final DynamicCommandExceptionType WAYPOINT_NOT_FOUND_EXCEPTION = new DynamicCommandExceptionType(name -> Component.translatable("commands.sw:waypoint.notFound", name));
 
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
@@ -98,8 +100,17 @@ public final class WaypointCommand {
         ;
     }
 
-    private static CompletableFuture<Suggestions> getWaypointSuggestions(CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder, WaypointSuggestions waypointSuggestions) {
-        Map<String, Waypoint> worldWaypoints = API.getWorldWaypoints(API.getWorldIdentifier(ctx.getSource().getClient()));
+    private static CompletableFuture<Suggestions> getWaypointSuggestions(CommandContext<FabricClientCommandSource> ctx, SuggestionsBuilder builder, WaypointSuggestions waypointSuggestions) throws CommandSyntaxException {
+        String worldIdentifier = API.getWorldIdentifier(ctx.getSource().getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
+
+        Map<String, Waypoint> worldWaypoints = API.getWorldWaypoints(worldIdentifier);
+        if (worldWaypoints == null) {
+            return Suggestions.empty();
+        }
+
         if (waypointSuggestions == WaypointSuggestions.ALL) {
             return suggest(worldWaypoints.keySet(), builder);
         }
@@ -119,6 +130,9 @@ public final class WaypointCommand {
 
     private static int add(FabricClientCommandSource source, String name, BlockPos pos, ResourceKey<Level> dimension) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.addWaypoint(worldIdentifier, dimension, name, pos);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.add.success", name, formatCoordinates(pos), dimension.identifier()));
         return returnValue;
@@ -126,6 +140,9 @@ public final class WaypointCommand {
 
     private static int add(FabricClientCommandSource source, String name, BlockPos pos, ResourceKey<Level> dimension, int color) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.addWaypoint(worldIdentifier, dimension, name, pos, color);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.addWithColor.success", name, formatCoordinates(pos), dimension.identifier(), Integer.toHexString(color)));
         return returnValue;
@@ -133,6 +150,9 @@ public final class WaypointCommand {
 
     private static int remove(FabricClientCommandSource source, String name) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.removeWaypoint(worldIdentifier, name);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.remove.success", name));
         return returnValue;
@@ -140,6 +160,9 @@ public final class WaypointCommand {
 
     private static int rename(FabricClientCommandSource source, String name, String newName) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.renameWaypoint(worldIdentifier, name, newName);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.rename.success", name, newName));
         return returnValue;
@@ -147,6 +170,9 @@ public final class WaypointCommand {
 
     private static int edit(FabricClientCommandSource source, String name, BlockPos pos) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.editWaypoint(worldIdentifier, name, pos);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.edit.success", name, formatCoordinates(pos)));
         return returnValue;
@@ -154,6 +180,9 @@ public final class WaypointCommand {
 
     private static int edit(FabricClientCommandSource source, String name, BlockPos pos, ResourceKey<Level> dimension) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.editWaypoint(worldIdentifier, name, dimension, pos);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.editWithDimension.success", name, formatCoordinates(pos), dimension.identifier()));
         return returnValue;
@@ -161,6 +190,9 @@ public final class WaypointCommand {
 
     private static int setVisibility(FabricClientCommandSource source, String name, boolean visible) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.setWaypointVisibility(worldIdentifier, name, visible);
         if (visible) {
             source.sendFeedback(Component.translatable("commands.sw:waypoint.show.success", name));
@@ -172,22 +204,28 @@ public final class WaypointCommand {
 
     private static int setColor(FabricClientCommandSource source, String name, int color) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
         int returnValue = API.setWaypointColor(worldIdentifier, name, color);
         source.sendFeedback(Component.translatable("commands.sw:waypoint.setcolor.success", name, Integer.toHexString(color)));
         return returnValue;
     }
 
-    private static int list(FabricClientCommandSource source) {
+    private static int list(FabricClientCommandSource source) throws CommandSyntaxException {
         return list(source, true);
     }
 
-    private static int list(FabricClientCommandSource source, boolean current) {
+    private static int list(FabricClientCommandSource source, boolean current) throws CommandSyntaxException {
         BooleanFunction<Component> getVisibilityComponent = visible -> visible ? Component.translatable("commands.sw:waypoint.shown") : Component.translatable("commands.sw:waypoint.hidden");
         if (current) {
             String worldIdentifier = API.getWorldIdentifier(source.getClient());
+            if (worldIdentifier == null) {
+                throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+            }
             Map<String, Waypoint> worldWaypoints = API.getWorldWaypoints(worldIdentifier);
 
-            if (worldWaypoints.isEmpty()) {
+            if (worldWaypoints == null || worldWaypoints.isEmpty()) {
                 source.sendFeedback(Component.translatable("commands.sw:waypoint.list.empty"));
                 return 0;
             }
@@ -216,8 +254,16 @@ public final class WaypointCommand {
     }
 
     private static int get(FabricClientCommandSource source, String name) throws CommandSyntaxException {
-        Waypoint waypoint = API.getWorldWaypoints(API.getWorldIdentifier(source.getClient())).get(name);
+        String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
+        Map<String, Waypoint> worldWaypoints = API.getWorldWaypoints(worldIdentifier);
+        if (worldWaypoints == null) {
+            throw WAYPOINT_NOT_FOUND_EXCEPTION.create(name);
+        }
 
+        Waypoint waypoint = worldWaypoints.get(name);
         if (waypoint == null) {
             throw WAYPOINT_NOT_FOUND_EXCEPTION.create(name);
         }

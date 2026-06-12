@@ -32,13 +32,17 @@ public final class ImportCommand {
 
     private static int importWaypoints(FabricClientCommandSource source, String other) throws CommandSyntaxException {
         String worldIdentifier = API.getWorldIdentifier(source.getClient());
+        if (worldIdentifier == null) {
+            throw WaypointCommand.NO_WORLD_IDENTIFIER_EXCEPTION.create();
+        }
+
         if (other.equals(worldIdentifier)) {
             throw SAME_WORLD_EXCEPTION.create();
         }
 
         Map<String, Waypoint> otherWaypoints = API.getWorldWaypoints(other);
 
-        if (otherWaypoints.isEmpty()) {
+        if (otherWaypoints == null || otherWaypoints.isEmpty()) {
             throw NO_WAYPOINTS_TO_EXPORT_EXCEPTION.create(other);
         }
 
