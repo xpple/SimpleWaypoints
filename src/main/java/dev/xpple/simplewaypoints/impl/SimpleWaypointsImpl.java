@@ -91,7 +91,7 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
             }
             return "realm/" + worldData.id();
         }
-        return "multiplayer/" + packetListener.getConnection().getRemoteAddress();
+        return "multiplayer/" + shortenInetAddressString(packetListener.getConnection().getRemoteAddress().toString());
     }
 
     @Override
@@ -232,5 +232,18 @@ public final class SimpleWaypointsImpl implements SimpleWaypointsAPI {
 
         SerializationHelper.saveFile();
         return Command.SINGLE_SUCCESS;
+    }
+
+    public static String shortenInetAddressString(String inetAddressString) {
+        int slashIndex = inetAddressString.indexOf('/');
+        if (slashIndex > 0) {
+            inetAddressString = inetAddressString.substring(0, slashIndex);
+        }
+
+        if (inetAddressString.length() > 1 && inetAddressString.endsWith(".")) {
+            inetAddressString = inetAddressString.substring(0, inetAddressString.length() - 1);
+        }
+
+        return inetAddressString;
     }
 }
