@@ -103,7 +103,7 @@ public final class SerializationHelper {
         }
 
         // There is some guessing involved here but it's good enough
-        if ((worldIdentifier.contains(".") && !worldIdentifier.contains("..")) || worldIdentifier.startsWith("localhost")) {
+        if (!worldIdentifier.contains(" ") && (worldIdentifier.contains(".") && !worldIdentifier.contains("..")) || worldIdentifier.startsWith("localhost")) {
             return "multiplayer/" + worldIdentifier;
         } else {
             return "singleplayer/" + worldIdentifier;
