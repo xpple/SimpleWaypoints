@@ -165,6 +165,12 @@ public final class WaypointRenderingHelper {
     }
 
     private static void extractWaypointBoxes(LevelExtractionContext context) {
+        // Mods that render a secondary world (e.g. Immersive Portals' portal
+        // destination pass) run extraction with no level render state.
+        if (context.levelState() == null) {
+            return;
+        }
+
         String worldIdentifier = SimpleWaypointsImpl.INSTANCE.getWorldIdentifier(Minecraft.getInstance());
         if (worldIdentifier == null) {
             return;
