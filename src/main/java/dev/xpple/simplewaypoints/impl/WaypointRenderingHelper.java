@@ -22,12 +22,15 @@ import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.feature.ShapeOutlineFeatureRenderer;
 import net.minecraft.client.renderer.feature.TextFeatureRenderer;
+import net.minecraft.client.renderer.feature.submit.SubmitNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.CommonColors;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -51,7 +54,7 @@ public final class WaypointRenderingHelper {
     public static void registerEvents() {
         HudElementRegistry.addLast(HUD_LAYER_ID, WaypointRenderingHelper::renderWaypointMarkers);
         LevelExtractionEvents.END_EXTRACTION.register(WaypointRenderingHelper::extractWaypointBoxes);
-        LevelRenderEvents.END_MAIN.register(WaypointRenderingHelper::renderWaypointBoxes);
+        LevelRenderEvents.COLLECT_SUBMITS.register(WaypointRenderingHelper::renderWaypointBoxes);
     }
 
     private static void renderWaypointMarkers(GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker) {
@@ -219,25 +222,54 @@ public final class WaypointRenderingHelper {
             if (waypoint.renderLineBox) {
                 poseStack.pushPose();
                 poseStack.translate(waypoint.relPosition().x, waypoint.relPosition().y, waypoint.relPosition().z);
-                context.submitNodeCollector().submitShapeOutline(poseStack, Shapes.block(), NoDepthLayer.LINES_NO_DEPTH_LAYER, ARGB.opaque(waypoint.color()), 2, true);
+                submitAfterTerrain(
+                    context,
+                    new ShapeOutlineFeatureRenderer.Submit(
+                        poseStack.last().copy(),
+                        Shapes.block(),
+                        NoDepthLayer.LINES_NO_DEPTH_LAYER,
+                        ARGB.opaque(waypoint.color()),
+                        2
+                    )
+                );
                 poseStack.popPose();
             }
 
             if (waypoint.renderLabel) {
                 poseStack.pushPose();
                 poseStack.translate(waypoint.relPosition().add(0.5).add(new Vec3(0, 1, 0)));
-                poseStack.mulPose(context.levelState().cameraRenderState.orientation);
+                poseStack.rotate(context.levelState().cameraRenderState.orientation);
                 poseStack.scale(0.005f * waypoint.distance(), -0.005f * waypoint.distance(), 0.005f * waypoint.distance());
 
                 Font font = Minecraft.getInstance().font;
                 int width = font.width(waypoint.name()) / 2;
                 int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
-                // should always be true, but this is safer
-                if (context.submitNodeCollector().order(0) instanceof SubmitNodeCollection submitNodeCollection) {
-                    submitNodeCollection.alwaysOnTop.submit(new TextFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), -width, 0, Component.literal(waypoint.name()).getVisualOrderText(), false, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_SKY, 0xFF_FFFFFF, backgroundColour, 0));
-                }
+                submitAfterTerrain(
+                    context,
+                    new TextFeatureRenderer.Submit(
+                        new Matrix4f(poseStack.last().pose()),
+                        Font.DisplayMode.SEE_THROUGH,
+                        LightCoordsUtil.FULL_SKY,
+                        new TextFeatureRenderer.Content.Text(
+                            -width,
+                            0,
+                            Component.literal(waypoint.name()).getVisualOrderText(),
+                            false,
+                            CommonColors.WHITE,
+                            backgroundColour,
+                            0
+                        )
+                    )
+                );
                 poseStack.popPose();
             }
+        }
+    }
+
+    private static void submitAfterTerrain(LevelRenderContext context, SubmitNode submit) {
+        // should always be true, but this is safer
+        if (context.submitNodeCollector().order(0) instanceof SubmitNodeCollection submitNodeCollection) {
+            submitNodeCollection.afterTerrain.submit(submit);
         }
     }
 

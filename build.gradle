@@ -7,8 +7,6 @@ plugins {
     id 'dev.lukebemish.central-portal-publishing' version "${central_portal_publishing_version}"
 }
 
-version = project.mod_version
-group = project.maven_group
 description = project.mod_description
 
 base {
@@ -55,7 +53,7 @@ tasks.register('generateBuildInfo', GenerateBuildInfoTask) {
 
 processResources {
     def props = [
-        version: project.mod_version,
+        version: project.version,
         mod_description: project.mod_description,
         minecraft_version_dependency: project.minecraft_version_dependency,
         loader_version: project.fabric_loader_version,
