@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.feature.ShapeOutlineFeatureRenderer;
 import net.minecraft.client.renderer.feature.TextFeatureRenderer;
 import net.minecraft.client.renderer.feature.submit.SubmitNode;
+import net.minecraft.client.renderer.feature.submit.TranslucentSubmit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -244,7 +245,7 @@ public final class WaypointRenderingHelper {
                 Font font = Minecraft.getInstance().font;
                 int width = font.width(waypoint.name()) / 2;
                 int backgroundColour = (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 255.0f) << 24;
-                submitAfterTerrain(
+                submitSeeThrough(
                     context,
                     new TextFeatureRenderer.Submit(
                         new Matrix4f(poseStack.last().pose()),
@@ -263,6 +264,13 @@ public final class WaypointRenderingHelper {
                 );
                 poseStack.popPose();
             }
+        }
+    }
+
+    private static void submitSeeThrough(LevelRenderContext context, TranslucentSubmit submit) {
+        // should always be true, but this is safer
+        if (context.submitNodeCollector().order(0) instanceof SubmitNodeCollection submitNodeCollection) {
+            submitNodeCollection.seeThrough.submit(submit);
         }
     }
 
